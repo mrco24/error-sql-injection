@@ -34,6 +34,20 @@ func main() {
 		return
 	}
 
+	// Define color constants for your banner
+	CYAN := "\033[96m"
+	NC := "\033[0m"
+
+	// Add your banner here
+	fmt.Print(CYAN, `
+ 
+____ ____ ____ ____ ____    ____ ____ _       _ _  _  _ ____ ____ ___ _ ____ _  _ 
+|___ |__/ |__/ |  | |__/ __ [__  |  | |    __ | |\ |  | |___ |     |  | |  | |\ | 
+|___ |  \ |  \ |__| |  \    ___] |_\| |___    | | \| _| |___ |___  |  | |__| | \| 
+                                                                                  
+ 
+`, NC)
+
 	urls, err := readLines(urlFile)
 	if err != nil {
 		fmt.Printf("Error reading URLs from %s: %v\n", urlFile, err)
@@ -55,8 +69,6 @@ func main() {
 	for _, url := range urls {
 		for _, payload := range payloads {
 			fullURL := url + payload
-			// Remove the following line to remove the Testing URL from the output
-			// fmt.Printf("Testing URL: %s\n", fullURL)
 
 			body, err := fetchURL(fullURL)
 			if err != nil {
