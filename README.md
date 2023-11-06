@@ -4,7 +4,7 @@
 <h4 align="center">Error Based Sql Injection Detection</h4>
 <p align="center">
   <a href="https://github.com/mrco24/mrco24-error-sql">
-    <img src="https://img.shields.io/badge/Mrco24-Error-Sql">
+    <img src="https://img.shields.io/badge/Mrco24-Error_Error_Based_Sql_Injection_Detection-green">
   </a>
    <a href="https://github.com/mrco24/mrco24-error-sql">
     <img src="https://img.shields.io/static/v1?label=Update&message=V1.0&color=green">
@@ -15,9 +15,12 @@
 </p>
 
 # Installation:
-- go get -u github.com/mrco24/mrco24-error-sql
+```
+go get -u github.com/mrco24/mrco24-error-sql
+```
 # Usage:
-- mrco24-error-sql url.txt -p payload.txt -w error.txt -o output.txt -v
-
+```
+mrco24-error-sql url.txt -p payload.txt -w error.txt -o output.txt -v
+```
 # Current Features:
 - This script will collec
