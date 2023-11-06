@@ -1,6 +1,5 @@
 <h1 align="center">
 <a href="https://cooltext.com"><img src="https://images.cooltext.com/5678557.png" width="682" height="85" alt="Mrco24-Error-Sql" /></a>
-<br />Image by <a href="https://cooltext.com">Cool Text: Free Graphics Generator</a> - <a href="https://cooltext.com/Edit-Logo?LogoID=4466339354">Edit Image</a>
 </h1>
 <h4 align="center">Error Based Sql Injection Detection</h4>
 <p align="center">
