@@ -1,6 +1,24 @@
-# sql
-go get -u github.com/mrco24/mrco24-error-sql
+<h1 align="center">
+<a href="https://cooltext.com"><img src="https://images.cooltext.com/5678557.png" width="682" height="85" alt="Mrco24-Error-Sql" /></a>
+<br />Image by <a href="https://cooltext.com">Cool Text: Free Graphics Generator</a> - <a href="https://cooltext.com/Edit-Logo?LogoID=4466339354">Edit Image</a>
+</h1>
+<h4 align="center">Error Based Sql Injection Detection</h4>
+<p align="center">
+  <a href="https://github.com/mrco24/mrco24-error-sql">
+    <img src="https://img.shields.io/badge/Mrco24-Error-Sql">
+  </a>
+   <a href="https://github.com/mrco24/mrco24-error-sql">
+    <img src="https://img.shields.io/static/v1?label=Update&message=V1.0&color=green">
+  </a>
+  <a href="https://twitter.com/mrco24">
+      <img src="https://img.shields.io/twitter/follow/mrco24?style=social">
+  </a>
+</p>
 
+# Installation:
+- go get -u github.com/mrco24/mrco24-error-sql
+# Usage:
+- mrco24-error-sql url.txt -p payload.txt -w error.txt -o output.txt -v
 
-# use
-mrco24-error-sql url.txt -p payload.txt -w error.txt -o output.txt -v
+# Current Features:
+- This script will collec
