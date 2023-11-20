@@ -104,7 +104,9 @@ ____ ____ ____ ____ ____    ____ ____ _       _ _  _  _ ____ ____ ___ _ ____ _  
 					status := "Vulnerable"
 					result := fmt.Sprintf("%s - %s%s%s\n", fullURL, color, status, resetColor)
 					fmt.Print(result) // Print to console
-					if err := writeToFile(result, outputFile); err != nil {
+
+					// Write only vulnerable URLs to the output file
+					if err := writeToFile(fullURL, outputFile); err != nil {
 						fmt.Printf("Error writing to output file: %v\n", err)
 					}
 				}
