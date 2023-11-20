@@ -23,4 +23,4 @@ go get -u github.com/mrco24/mrco24-error-sql
 mrco24-error-sql url.txt -p payload.txt -w error.txt -o output.txt -v
 ```
 # Current Features:
-- This script will collec
+- This script will
