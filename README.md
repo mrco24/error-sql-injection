@@ -17,7 +17,7 @@
 # Installation:
 ```
 go get -u github.com/mrco24/mrco24-error-sql
-update go
+**update go**
 go install github.com/mrco24/mrco24-error-sql@latest
 ```
 # Usage:
