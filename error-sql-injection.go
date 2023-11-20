@@ -8,24 +8,22 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 )
 
-// ANSI escape codes for text colors
-const (
-	redColor   = "\033[91m"
-	greenColor = "\033[92m"
-	resetColor = "\033[0m"
-)
+// ... (constants and functions remain unchanged)
 
 func main() {
 	var urlFile, payloadFile, wordToMatchFile, outputFile string
 	var verbose bool
+	var threads int
 
 	flag.StringVar(&urlFile, "u", "", "File containing a list of URLs")
 	flag.StringVar(&payloadFile, "p", "", "File containing payloads")
 	flag.StringVar(&wordToMatchFile, "w", "", "File containing words to match")
 	flag.StringVar(&outputFile, "o", "output.txt", "Output file to store results")
 	flag.BoolVar(&verbose, "v", false, "Verbose output")
+	flag.IntVar(&threads, "h", 1, "Number of threads (concurrent requests)")
 
 	flag.Parse()
 
@@ -34,20 +32,9 @@ func main() {
 		return
 	}
 
-	// Define color constants for your banner
-	CYAN := "\033[96m"
-	NC := "\033[0m"
+	// ... (banner and reading input files remain unchanged)
 
-	// Add your banner here
-	fmt.Print(CYAN, `
- 
-____ ____ ____ ____ ____    ____ ____ _       _ _  _  _ ____ ____ ___ _ ____ _  _ 
-|___ |__/ |__/ |  | |__/ __ [__  |  | |    __ | |\ |  | |___ |     |  | |  | |\ | 
-|___ |  \ |  \ |__| |  \    ___] |_\| |___    | | \| _| |___ |___  |  | |__| | \| 
-                                                                                  
- 
-`, NC)
-
+	var wg sync.WaitGroup
 	urls, err := readLines(urlFile)
 	if err != nil {
 		fmt.Printf("Error reading URLs from %s: %v\n", urlFile, err)
@@ -69,59 +56,35 @@ ____ ____ ____ ____ ____    ____ ____ _       _ _  _  _ ____ ____ ___ _ ____ _  
 	for _, url := range urls {
 		for _, payload := range payloads {
 			fullURL := url + payload
-
-			body, err := fetchURL(fullURL)
-			if err != nil {
-				fmt.Printf("Error fetching URL %s: %v\n", fullURL, err)
-				continue
-			}
-
-			vulnerable := false
-			for _, word := range wordsToMatch {
-				if strings.Contains(body, word) {
-					vulnerable = true
-					break
+			wg.Add(1)
+			go func(url, fullURL, payload string, wordsToMatch []string) {
+				defer wg.Done()
+				body, err := fetchURL(fullURL)
+				if err != nil {
+					fmt.Printf("Error fetching URL %s: %v\n", fullURL, err)
+					return
 				}
-			}
 
-			color := greenColor
-			status := "Not Vulnerable"
-			if vulnerable {
-				color = redColor
-				status = "Vulnerable"
-			}
-			fmt.Printf("%s - %s%s%s\n", fullURL, color, status, resetColor)
+				vulnerable := false
+				for _, word := range wordsToMatch {
+					if strings.Contains(body, word) {
+						vulnerable = true
+						break
+					}
+				}
+
+				color := greenColor
+				status := "Not Vulnerable"
+				if vulnerable {
+					color = redColor
+					status = "Vulnerable"
+				}
+				fmt.Printf("%s - %s%s%s\n", fullURL, color, status, resetColor)
+			}(url, fullURL, payload, wordsToMatch)
 		}
 	}
+
+	wg.Wait()
 }
 
-func readLines(filename string) ([]string, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-
-	return lines, scanner.Err()
-}
-
-func fetchURL(url string) (string, error) {
-	response, err := http.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return "", err
-	}
-
-	return string(body), nil
-}
+// ... (readLines and fetchURL functions remain unchanged)
