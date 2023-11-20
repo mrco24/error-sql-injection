@@ -27,7 +27,6 @@ var (
 	threads         int
 )
 
-
 func init() {
 	flag.StringVar(&urlFile, "u", "", "File containing a list of URLs")
 	flag.StringVar(&payloadFile, "p", "", "File containing payloads")
@@ -100,13 +99,15 @@ ____ ____ ____ ____ ____    ____ ____ _       _ _  _  _ ____ ____ ___ _ ____ _  
 					}
 				}
 
-				color := greenColor
-				status := "Not Vulnerable"
 				if vulnerable {
-					color = redColor
-					status = "Vulnerable"
+					color := redColor
+					status := "Vulnerable"
+					result := fmt.Sprintf("%s - %s%s%s\n", fullURL, color, status, resetColor)
+					fmt.Print(result) // Print to console
+					if err := writeToFile(result, outputFile); err != nil {
+						fmt.Printf("Error writing to output file: %v\n", err)
+					}
 				}
-				fmt.Printf("%s - %s%s%s\n", fullURL, color, status, resetColor)
 			}(url, payload)
 		}
 	}
@@ -144,4 +145,18 @@ func fetchURL(url string) (string, error) {
 	}
 
 	return string(body), nil
+}
+
+func writeToFile(output string, filename string) error {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if _, err := file.WriteString(output + "\n"); err != nil {
+		return err
+	}
+
+	return nil
 }
