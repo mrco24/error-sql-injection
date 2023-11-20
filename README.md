@@ -22,7 +22,7 @@ go install github.com/mrco24/mrco24-error-sql@latest
 ```
 # Usage:
 ```
-mrco24-error-sql url.txt -p payload.txt -w error.txt -o output.txt -v
+mrco24-error-sql -u url.txt -p payload.txt -w error.txt -o output.txt -v
 ```
 # Current Features:
 - This script will
