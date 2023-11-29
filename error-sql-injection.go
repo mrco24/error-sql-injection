@@ -1,36 +1,39 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 )
 
 // ANSI escape codes for text colors
 const (
-	redColor   = "\033[91m"
-	greenColor = "\033[92m"
-	resetColor = "\033[0m"
+	redColor    = "\033[91m"
+	greenColor  = "\033[92m"
+	yellowColor = "\033[93m"
+	resetColor  = "\033[0m"
 )
 
 var (
-	urlFile         string
-	payloadFile     string
-	wordToMatchFile string
-	outputFile      string
-	verbose         bool
-	threads         int
+	url        string
+	urlFile    string
+	outputFile string
+	verbose    bool
+	threads    int
 )
 
+// Default payloads
+var defaultPayloads = []string{
+	"%27%22%60",
+	"'",
+}
+
 func init() {
-	flag.StringVar(&urlFile, "u", "", "File containing a list of URLs")
-	flag.StringVar(&payloadFile, "p", "", "File containing payloads")
-	flag.StringVar(&wordToMatchFile, "w", "", "File containing words to match")
+	flag.StringVar(&url, "u", "", "Single target URL")
+	flag.StringVar(&urlFile, "f", "", "File containing a list of URLs")
 	flag.StringVar(&outputFile, "o", "output.txt", "Output file to store results")
 	flag.BoolVar(&verbose, "v", false, "Verbose output")
 	flag.IntVar(&threads, "t", 20, "Number of threads (concurrent requests)")
@@ -38,84 +41,74 @@ func init() {
 }
 
 func main() {
-	// Define color constants for your banner
-	CYAN := "\033[96m"
-	NC := "\033[0m"
+	var urls []string
 
-	// Add your banner here
-	fmt.Print(CYAN, `
- 
-____ ____ ____ ____ ____    ____ ____ _       _ _  _  _ ____ ____ ___ _ ____ _  _ 
-|___ |__/ |__/ |  | |__/ __ [__  |  | |    __ | |\ |  | |___ |     |  | |  | |\ | 
-|___ |  \ |  \ |__| |  \    ___] |_\| |___    | | \| _| |___ |___  |  | |__| | \| 
-                                                                                  
- 
-`, NC)
-
-	urls, err := readLines(urlFile)
-	if err != nil {
-		fmt.Printf("Error reading URLs from %s: %v\n", urlFile, err)
-		return
+	if url != "" {
+		urls = append(urls, url)
+	} else if urlFile != "" {
+		urlsFromFile, err := readLines(urlFile)
+		if err != nil {
+			fmt.Printf("Error reading URLs from %s: %v\n", urlFile, err)
+			return
+		}
+		urls = append(urls, urlsFromFile...)
 	}
 
-	payloads, err := readLines(payloadFile)
-	if err != nil {
-		fmt.Printf("Error reading payloads from %s: %v\n", payloadFile, err)
-		return
-	}
+	for _, u := range urls {
+		for _, payload := range defaultPayloads {
+			fullURL := u + payload
 
-	wordsToMatch, err := readLines(wordToMatchFile)
-	if err != nil {
-		fmt.Printf("Error reading words to match from %s: %v\n", wordToMatchFile, err)
-		return
-	}
+			body, err := fetchURL(fullURL)
+			// Print the request URL prefix with color, regardless of success or failure
+			fmt.Printf("%sRequest URL:%s %s\n", yellowColor, resetColor, fullURL)
 
-	var wg sync.WaitGroup
-	semaphore := make(chan struct{}, threads)
+			if err != nil {
+				fmt.Printf("Error fetching URL %s: %v\n", fullURL, err)
+			}
 
-	for _, url := range urls {
-		for _, payload := range payloads {
-			wg.Add(1)
-			semaphore <- struct{}{}
-			go func(url, payload string) {
-				defer func() {
-					<-semaphore
-					wg.Done()
-				}()
+			vulnerable := false
+			wordsToMatch := []string{
+				"mysql",
+				"fetch_array",
+				"SQL syntax",
+				"500 Internal Server Error",
+				"mysqli",
+				"Access Database Engine",
+				"SQLite",
+				"Sybase",
+				"Server message",
+				"Oracle",
+				"Driver",
+			}
 
-				fullURL := url + payload
-
-				body, err := fetchURL(fullURL)
-				if err != nil {
-					fmt.Printf("Error fetching URL %s: %v\n", fullURL, err)
-					return
+			for _, word := range wordsToMatch {
+				if strings.Contains(body, word) {
+					vulnerable = true
+					break
 				}
+			}
 
-				vulnerable := false
-				for _, word := range wordsToMatch {
-					if strings.Contains(body, word) {
-						vulnerable = true
-						break
-					}
+			var color, status string
+			if vulnerable {
+				color = redColor
+				status = "Vulnerable"
+			} else {
+				color = greenColor
+				status = "Next"
+			}
+
+			// Print the full URL and status with color
+			result := fmt.Sprintf("Full URL: %s - %s%s%s\n", fullURL, color, status, resetColor)
+			fmt.Print(result) // Print to console
+
+			// Write only vulnerable URLs to the output file
+			if vulnerable {
+				if err := writeToFile(fullURL+" - "+status, outputFile); err != nil {
+					fmt.Printf("Error writing to output file: %v\n", err)
 				}
-
-				if vulnerable {
-					color := redColor
-					status := "Vulnerable"
-					result := fmt.Sprintf("%s - %s%s%s\n", fullURL, color, status, resetColor)
-					fmt.Print(result) // Print to console
-
-					// Write only vulnerable URLs to the output file
-					if err := writeToFile(fullURL, outputFile); err != nil {
-						fmt.Printf("Error writing to output file: %v\n", err)
-					}
-				}
-			}(url, payload)
+			}
 		}
 	}
-
-	wg.Wait()
-	close(semaphore)
 }
 
 func readLines(filename string) ([]string, error) {
@@ -126,12 +119,13 @@ func readLines(filename string) ([]string, error) {
 	defer file.Close()
 
 	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+	content, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
 	}
+	lines = strings.Split(string(content), "\n")
 
-	return lines, scanner.Err()
+	return lines, nil
 }
 
 func fetchURL(url string) (string, error) {
