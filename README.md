@@ -20,11 +20,22 @@ go get -u github.com/mrco24/mrco24-error-sql
 **update go-version 2.10+**
 go install github.com/mrco24/mrco24-error-sql@latest
 ```
-# Usage:
+# Usage of:
 ```
 mrco24-error-sql -f url.txt -o output.txt -v
 
 mrco24-error-sql -u http://testphp.vulnweb.com/artists.php?artist=1 -o output.txt -v
+
+  -f string
+        File containing a list of URLs
+  -o string
+        Output file to store results (default "output.txt")
+  -t int
+        Number of threads (concurrent requests) (default 20)
+  -u string
+        Single target URL
+  -v    Verbose output
+
 ```
 # Current Features:
 - This script will
