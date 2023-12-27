@@ -56,6 +56,7 @@ func main() {
 
 	for _, u := range urls {
 		for _, payload := range defaultPayloads {
+			// Append payload to the end of the URL
 			fullURL := u + payload
 
 			body, err := fetchURL(fullURL)
