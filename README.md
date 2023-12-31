@@ -19,6 +19,8 @@
 go get -u github.com/mrco24/mrco24-error-sql
 **update go-version 2.10+**
 go install github.com/mrco24/mrco24-error-sql@latest
+
+cp -r /root/go/bin/mrco24-error-sql /usr/local/bin
 ```
 # Usage of:
 ```
