@@ -78,8 +78,6 @@ func main() {
 				"SQLite",
 				"Sybase",
 				"Server message",
-				"Oracle",
-				"Driver",
 			}
 
 			for _, word := range wordsToMatch {
